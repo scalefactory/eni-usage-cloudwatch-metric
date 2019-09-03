@@ -1,4 +1,4 @@
-service: eni-usage-cloudwatch-alarm # NOTE: update this with your service name
+service: eni-usage-cloudwatch-metric # NOTE: update this with your service name
 
 provider:
   name: aws

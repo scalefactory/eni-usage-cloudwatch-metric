@@ -1,5 +1,5 @@
 {
-  "name": "eni-usage-cloudwatch-alarm",
+  "name": "eni-usage-cloudwatch-metric",
   "version": "1.0.0",
   "description": "A lambda function to publish a custom cloudwatch metric counting the number of elastic network interfaces",
   "main": "handler.js",
