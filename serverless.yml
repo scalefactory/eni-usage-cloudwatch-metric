@@ -1,0 +1,19 @@
+service: eni-usage-cloudwatch-alarm # NOTE: update this with your service name
+
+provider:
+  name: aws
+  runtime: nodejs10.x
+
+  iamRoleStatements:
+    - Effect: "Allow"
+      Action:
+        - "cloudwatch:PutMetricData"
+        - "ec2:DescribeNetworkInterfaces"
+      Resource: "*"
+
+functions:
+  cron:
+    handler: handler.run
+    events:
+      # Invoke Lambda function every minute
+      - schedule: rate(1 minute)

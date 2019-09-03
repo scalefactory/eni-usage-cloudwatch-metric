@@ -1,0 +1,15 @@
+{
+  "name": "eni-usage-cloudwatch-alarm",
+  "version": "1.0.0",
+  "description": "A lambda function to publish a custom cloudwatch metric counting the number of elastic network interfaces",
+  "main": "handler.js",
+  "dependencies": {
+    "aws-sdk": "^2.521.0"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC"
+}
