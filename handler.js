@@ -6,33 +6,50 @@ const cw = new AWS.CloudWatch();
 
 module.exports.run = (event) => {
   console.log("Starting")
-  const ec2Params = {
+  let ec2Params = {
     MaxResults: 1000
   };
 
-  ec2.describeNetworkInterfaces(ec2Params, function(err, data) {
-    if (err) {
-      console.log("Error", err)
-    } else {
-      console.log(`Found ${data.NetworkInterfaces.length} ENIS`)
+  ['attached', 'detached'].forEach(type => {
+    ec2Params['Filters'] = [
+      {
+        'Name': 'attachment.status',
+        'Values': [
+          type
+        ]
+      }
+    ];
 
-      const cwParams = {
-        MetricData: [
-          {
-            MetricName: 'eniUsage',
-            Value: data.NetworkInterfaces.length
-          },
-        ],
-        Namespace: 'EniUsage'
-      };
+    ec2.describeNetworkInterfaces(ec2Params, function(err, data) {
+      if (err) {
+        console.log("Error", err)
+      } else {
+        const cwParams = {
+          MetricData: [
+            {
+              MetricName: 'eniUsage',
+              Dimensions: [
+                {
+                  Name: 'AttachmentStatus',
+                  Value: type
+                }
+              ],
+              Value: data.NetworkInterfaces.length
+            },
+          ],
+          Namespace: 'EniUsage'
+        };
 
-      cw.putMetricData(cwParams, function(err, data) {
-        if (err) {
-          console.log("Error", err);
-        } else {
-          console.log("Success", JSON.stringify(data));
-        }
-      });
-    }
+        cw.putMetricData(cwParams, function(err, data) {
+          if (err) {
+            console.log("Error", err);
+          } else {
+            console.log("Success", JSON.stringify(data));
+          }
+        });
+      }
+    });
   });
+
+
 };

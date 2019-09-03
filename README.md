@@ -11,7 +11,7 @@
 </p>
 
 ## :sparkles: Features
-- Custom ENI count metric
+- Custom ENI count metric with attachment status dimensions
 
 ## :bulb: Quick Start
 Run `serverless deploy` to deploy this lambda function to AWS.
