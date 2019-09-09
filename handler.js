@@ -1,55 +1,41 @@
-'use strict';
+'use strict'
+const AWS = require('aws-sdk')
+const statusNames = ['available', 'in-use']
 
-const AWS = require('aws-sdk');
-const ec2 = new AWS.EC2();
-const cw = new AWS.CloudWatch();
+const buildEc2Params = (statusNamesArr) => ({
+  MaxResults: 1000,
+  Filters: [{
+    Name: 'status',
+    Values: statusNamesArr,
+  }],
+});
 
-module.exports.run = (event) => {
-  console.log("Starting")
-  let ec2Params = {
-    MaxResults: 1000
-  };
-
-  ['attached', 'detached'].forEach(type => {
-    ec2Params['Filters'] = [
+const buildMetricParams = (ENIs, statusNamesArr) => ({
+  MetricData: [
+    ...statusNamesArr.map((statusName) => (
       {
-        'Name': 'attachment.status',
-        'Values': [
-          type
-        ]
+        MetricName: 'ENIStatus',
+        Dimensions: [{
+          Name: 'Status',
+          Value: statusName,
+        }],
+        Value: ENIs.filter(({ Status }) => Status === statusName).length,
+        Unit: 'Count',
       }
-    ];
+    )),
+  ],
+  Namespace: 'EniUsage',
+});
 
-    ec2.describeNetworkInterfaces(ec2Params, function(err, data) {
-      if (err) {
-        console.log("Error", err)
-      } else {
-        const cwParams = {
-          MetricData: [
-            {
-              MetricName: 'eniUsage',
-              Dimensions: [
-                {
-                  Name: 'AttachmentStatus',
-                  Value: type
-                }
-              ],
-              Value: data.NetworkInterfaces.length
-            },
-          ],
-          Namespace: 'EniUsage'
-        };
+module.exports.run = async () => {
+  const ec2 = new AWS.EC2();
+  const cloudWatch = new AWS.CloudWatch();
 
-        cw.putMetricData(cwParams, function(err, data) {
-          if (err) {
-            console.log("Error", err);
-          } else {
-            console.log("Success", JSON.stringify(data));
-          }
-        });
-      }
-    });
-  });
+  const ec2Params = buildEc2Params([...statusNames])
+  const { NetworkInterfaces } = await ec2.describeNetworkInterfaces(ec2Params).promise()
+  const metricParams = buildMetricParams(NetworkInterfaces, [...statusNames])
+  console.info('METRIC PARAMS:', JSON.stringify(metricParams, null, 2))
 
-
-};
+  const cloudWatchResponse = await cloudWatch.putMetricData(metricParams).promise()
+  console.info('CLOUDWATCH RESPONSE:', JSON.stringify(cloudWatchResponse, null, 2))
+}
