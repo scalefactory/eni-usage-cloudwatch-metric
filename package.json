@@ -4,7 +4,7 @@
   "description": "A lambda function to publish a custom cloudwatch metric counting the number of elastic network interfaces",
   "main": "handler.js",
   "dependencies": {
-    "aws-sdk": "^2.814.0"
+    "aws-sdk": "^2.1354.0"
   },
   "devDependencies": {},
   "scripts": {
